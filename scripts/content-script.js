@@ -1,5 +1,5 @@
 const timeout = 3000;
-const periodInMinutes = 10;
+const periodInMinutes = 1000 * 60 * 10;
 
 const apiUrl = "https://api.genelpara.com/embed/doviz.json";
 
@@ -21,42 +21,6 @@ browser.runtime.onMessage.addListener((msg) => {
 
   update();
 });
-
-function update() {
-  if (interval) {
-    clearTimeout(interval);
-  }
-
-  if (observer) {
-    observer.disconnect();
-  }
-
-  var els = document.querySelectorAll(".u2t");
-
-  els.forEach((el) => {
-    delete el.onmouseover;
-    delete el.onmouseout;
-
-    el.classList.remove("u2t");
-  });
-
-  start(true);
-}
-
-function init() {
-  fetch(apiUrl, {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-    },
-  })
-    .then((response) => response.json())
-    .then((response) => {
-      browser.storage.local.set({ usdRate: response.USD.satis }).then(() => {
-        setInterval(() => update(), periodInMinutes);
-      });
-    });
-}
 
 function run(data, settings) {
   var els = document.querySelectorAll(selectors);
@@ -144,6 +108,44 @@ function start(update) {
         observer.observe(document, { childList: true, subtree: true });
       });
   });
+}
+
+function update() {
+  if (interval) {
+    clearTimeout(interval);
+  }
+
+  if (observer) {
+    observer.disconnect();
+  }
+
+  var els = document.querySelectorAll(".u2t");
+
+  els.forEach((el) => {
+    el.onmouseover = null;
+    el.onmouseout = null;
+
+    el.classList.remove("u2t");
+  });
+
+  start(true);
+}
+
+function init() {
+  fetch(apiUrl, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+    },
+  })
+    .then((response) => response.json())
+    .then((response) => {
+      start();
+
+      browser.storage.local.set({ usdRate: response.USD.satis }).then(() => {
+        setInterval(() => update(), periodInMinutes);
+      });
+    });
 }
 
 init();
