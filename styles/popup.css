@@ -1,0 +1,19 @@
+html {
+  padding: 0;
+  margin: 0;
+  min-width: 300px;
+  max-width: 300px;
+  transform: scale(.85);  
+}
+
+.card-body {
+  padding: 25px 40px 30px;
+}
+
+.form-check-input:checked {
+  width: 1.2em;
+  height: 1.2em;
+  margin-top: 0.2em;
+  margin-left: -1.6em;
+  background-color: #303030;
+}

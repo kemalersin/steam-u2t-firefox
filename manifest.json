@@ -1,0 +1,30 @@
+﻿{
+  "name": "__MSG_appName__",
+  "version": "0.1.3",
+  "manifest_version": 2,
+  "description": "__MSG_appDescription__",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "u2t@kemalersin.com"
+    }
+  },  
+  "icons": {
+    "16": "assets/icon-16.png",
+    "128": "assets/icon-128.png"
+  },
+  "default_locale": "tr",
+  "browser_action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.steampowered.com/*",
+        "*://*.steamcommunity.com/*"
+      ],
+      "js": ["scripts/content-script.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "permissions": ["storage", "alarms", "*://api.genelpara.com/*"]
+}
