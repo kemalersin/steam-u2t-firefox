@@ -44,9 +44,14 @@ function run(data, settings) {
 
       var originalPrice = originalContent.replace("USD", "").trim();
 
-      var multipliedPrice = multipliedPrice.toLocaleString("tr-TR", {
+      if (settings.commission) {
+        multipliedPrice = multipliedPrice * (1 + (settings.commission / 100));
+      }
+
+      multipliedPrice = multipliedPrice.toLocaleString("tr-TR", {
         style: "currency",
         currency: "TRY",
+        maximumFractionDigits: settings.decimals ? 2 : 0,
       });
 
       if (settings.currency === 2) {
@@ -88,7 +93,9 @@ function start(update) {
     browser.storage.local
       .get({
         currency: 1,
-        presentation: 1,
+        presentation: 2,
+        commission: 0,
+        decimals: true 
       })
       .then((settings) => {
         if (settings.presentation === 3) {

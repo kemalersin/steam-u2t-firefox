@@ -1,9 +1,15 @@
 html {
-  padding: 0;
+  padding: 0; 
+  overflow: hidden;
+}
+
+body {
   margin: 0;
-  min-width: 300px;
-  max-width: 300px;
-  transform: scale(.85);  
+}
+
+.card,
+.card-header {
+  border-radius: 0 !important;
 }
 
 .card-body {
@@ -11,9 +17,23 @@ html {
 }
 
 .form-check-input:checked {
+  background-color: #303030;
+}
+
+.form-check:not(.form-switch) .form-check-input:checked {
   width: 1.2em;
   height: 1.2em;
   margin-top: 0.2em;
   margin-left: -1.6em;
-  background-color: #303030;
+}
+
+#opCommission {
+  color: #fff;
+  background-color: #444;
+}
+
+#opCommission:focus {
+  color: #444;
+  background-color: #fff;
+  transition: background-color 0.5s ease;
 }
