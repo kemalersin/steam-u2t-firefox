@@ -1,17 +1,3 @@
-const timeout = 3000;
-const periodInMinutes = 1000 * 60 * 10;
-
-const apiUrl = "https://api.genelpara.com/embed/doviz.json";
-
-const regex = /\$([0-9,]+\.\d{2})\s*(USD)?/;
-
-const selectors =
-  ".price:not(.u2t), .normal_price span:not(.u2t), .discount_final_price:not(.u2t), " +
-  "#header_wallet_balance:not(.u2t), #search_suggestion_contents .match_subtitle:not(.u2t), " +
-  ".game_purchase_price:not(.u2t), .game_area_dlc_price:not(.u2t), .your_price div:not(.u2t), " +
-  ".salepreviewwidgets_StoreSalePriceBox_Wh0L8:not(.u2t), #marketWalletBalanceAmount:not(.u2t), " +
-  ".market_commodity_orders_header_promote:not(.u2t), .market_commodity_orders_table td:not(.u2t)";
-
 var interval, observer;
 
 browser.runtime.onMessage.addListener((msg) => {
@@ -23,90 +9,78 @@ browser.runtime.onMessage.addListener((msg) => {
 });
 
 function run(data, settings) {
-  var els = document.querySelectorAll(selectors);
+  var selectors = convertHTMLSelectors();
+  var elements = document.querySelectorAll(selectors);
 
-  var hover = function (el) {
-    return () =>
-      (el.textContent =
-        el.textContent === el.dataset.multipliedPrice
-          ? el.dataset.originalPrice
-          : el.dataset.multipliedPrice);
-  };
+  elements.forEach((element) => {
+    var originalContent = element.dataset.originalContent || element.textContent;
 
-  els.forEach((el) => {
-    var originalContent = el.dataset.originalContent || el.textContent;
-
-    var match = originalContent.match(regex);
+    var match = originalContent.match(PRICE_REGEX);
 
     if (match) {
       var usdPrice = parseFloat(match[1]);
-      var multipliedPrice = usdPrice * data.usdRate;
+      var multipliedPrice = usdPrice * data[STORAGE_KEYS.USD_RATE];
+      var fractionDigits = (settings.decimals === DECIMALS.SHOW) ? 2 : 0;
+      
+      var originalPrice = originalContent.replace(CURRENCY_CODES.USD, "").trim();
 
-      var originalPrice = originalContent.replace("USD", "").trim();
-
-      if (settings.commission) {
+      if (settings.commission !== COMMISSIONS.NONE) {
         multipliedPrice = multipliedPrice * (1 + (settings.commission / 100));
-      }
+      }      
 
-      multipliedPrice = multipliedPrice.toLocaleString("tr-TR", {
-        style: "currency",
-        currency: "TRY",
-        maximumFractionDigits: settings.decimals ? 2 : 0,
-      });
+      multipliedPrice = getLocalizedPrice(multipliedPrice, fractionDigits);
 
-      if (settings.currency === 2) {
+      if (settings.currency === CURRENCIES.TRY) {
         var tmpPrice = multipliedPrice;
 
         multipliedPrice = originalPrice;
         originalPrice = tmpPrice;
       }
 
-      el.classList.add("u2t");
+      element.classList.add(CUSTOM_HTML_SIGN);
 
-      el.dataset.originalContent = originalContent;
-      el.dataset.originalPrice = originalPrice;
-      el.dataset.multipliedPrice = multipliedPrice;
+      element.dataset.originalContent = originalContent;
+      element.dataset.originalPrice = originalPrice;
+      element.dataset.multipliedPrice = multipliedPrice;
 
-      if (settings.presentation === 2) {
-        el.innerHTML = `${originalPrice}&nbsp;<small>(${multipliedPrice})</small>`;
+      if (settings.presentation === PRESENTATIONS.SIDE_BY_SIDE) {
+        element.innerHTML = `
+          ${originalPrice}&nbsp;
+          <small>(${multipliedPrice})</small>
+          `;
       } else {
-        el.textContent = `${originalPrice}`;
+        element.textContent = `${originalPrice}`;
 
-        if (settings.presentation === 4) {
-          el.style.position = "relative";
-          el.style.zIndex = "99999";
+        if (settings.presentation === PRESENTATIONS.HOVER) {
+          element.style.position = HOVER_STYLE.POSITION;
+          element.style.zIndex = HOVER_STYLE.Z_INDEX;
 
-          el.onmouseover = hover(el);
-          el.onmouseout = hover(el);
+          element.onmouseover = getRotationModifier(element);
+          element.onmouseout = getRotationModifier(element);
         }
       }
     }
   });
 }
 
-function start(update) {
-  browser.storage.local.get("usdRate").then((data) => {
+function start(updateData) {
+  browser.storage.local.get(STORAGE_KEYS.USD_RATE).then((data) => {
     if (!data.usdRate) {
       return;
     }
 
     browser.storage.local
-      .get({
-        currency: 1,
-        presentation: 2,
-        commission: 0,
-        decimals: true 
-      })
+      .get(DEFAULT_OPTIONS)
       .then((settings) => {
-        if (settings.presentation === 3) {
+        if (settings.presentation === PRESENTATIONS.ROTATIVE) {
           interval = setInterval(() => {
-            var els = document.querySelectorAll("[data-multiplied-price]");
+            var elements = document.querySelectorAll(CUSTOM_HTML_DATA_SELECTOR);
 
-            els.forEach((el) => hover(el)());
-          }, timeout);
+            elements.forEach((element) => getRotationModifier(element)());
+          }, ROTATION_TIMEOUT);
         }
 
-        if (update) {
+        if (updateData) {
           run(data, settings);
         }
 
@@ -126,20 +100,20 @@ function update() {
     observer.disconnect();
   }
 
-  var els = document.querySelectorAll(".u2t");
+  var elements = document.querySelectorAll(CUSTOM_HTML_SIGN_SELECTOR);
 
-  els.forEach((el) => {
-    el.onmouseover = null;
-    el.onmouseout = null;
+  elements.forEach((element) => {
+    element.onmouseover = null;
+    element.onmouseout = null;
 
-    el.classList.remove("u2t");
+    element.classList.remove(CUSTOM_HTML_SIGN);
   });
 
   start(true);
 }
 
 function init() {
-  fetch(apiUrl, {
+  fetch(API_URL, {
     method: "GET",
     headers: {
       Accept: "application/json",
@@ -150,7 +124,7 @@ function init() {
       start();
 
       browser.storage.local.set({ usdRate: response.USD.satis }).then(() => {
-        setInterval(() => update(), periodInMinutes);
+        setInterval(() => init(), PERIOD_IN_MINUTES);
       });
     });
 }

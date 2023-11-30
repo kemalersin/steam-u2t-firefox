@@ -1,18 +1,17 @@
 window.addEventListener("load", function () {
   browser.storage.local
-    .get({
-      currency: 1,
-      presentation: 2,
-      commission: 0,
-      decimals: true,
-      autoClose: true
-    })
+    .get(DEFAULT_OPTIONS)
     .then((result) => {
       var settings = document.forms["settings"].elements;
 
-      settings.opCurrency.value = result.currency;
-      settings.opPresentation.value = result.presentation;
+      settings.opCurrency.value = getKeyByValue(CURRENCIES, result.currency);
+      settings.opPresentation.value = getKeyByValue(
+        PRESENTATIONS,
+        result.presentation
+      );
+  
       settings.opCommission.value = result.commission;
+  
       settings.opDecimals.checked = result.decimals;
       settings.opAutoClose.checked = result.autoClose;
     });
@@ -22,23 +21,20 @@ window.addEventListener("load", function () {
 
     if (data.usdRate) {
       rate.classList.remove("d-none");
-
-      rate.textContent = (+data.usdRate).toLocaleString("tr-TR", {
-        style: "currency",
-        currency: "TRY",
-        minimumFractionDigits: 4
-      });
+      rate.textContent = getLocalizedPrice(+data.usdRate, 4);
     }
   });
 });
 
 document.forms["settings"].addEventListener("change", async function () {
   var options = {
-    currency: +this.opCurrency.value,
-    presentation: +this.opPresentation.value,
+    currency: CURRENCIES[this.opCurrency.value],
+    presentation: PRESENTATIONS[this.opPresentation.value],
+
     commission: +this.opCommission.value,
+
     decimals: this.opDecimals.checked,
-    autoClose: this.opAutoClose.checked
+    autoClose: this.opAutoClose.checked,
   }
 
   browser.storage.local.set(options);
