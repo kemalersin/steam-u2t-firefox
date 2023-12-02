@@ -1,5 +1,6 @@
 function convertHTMLSelectors() {
-    return STEAM_HTML_SELECTORS.join(`:not(.${CUSTOM_HTML_SIGN}),`)
+  var seperator = `:not(.${CUSTOM_HTML_SIGN})`;
+  return STEAM_HTML_SELECTORS.join(seperator + ",") + seperator;
 }
 
 function getKeyByValue(object, value) {
