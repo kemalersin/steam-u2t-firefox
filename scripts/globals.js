@@ -1,7 +1,7 @@
 const ROTATION_TIMEOUT = 3000;
 const PERIOD_IN_MINUTES = 1000 * 60 * 10;
 
-const API_URL = "https://api.genelpara.com/embed/doviz.json";
+const API_URL = "https://www.genelpara.com/fiyat.php";
 
 const PRICE_REGEX = /\$([0-9,]+\.\d{2})\s*(USD)?/;
 
