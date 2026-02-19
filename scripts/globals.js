@@ -1,7 +1,7 @@
 const ROTATION_TIMEOUT = 3000;
 const PERIOD_IN_MINUTES = 1000 * 60 * 10;
 
-const API_URL = "https://www.genelpara.com/fiyat.php";
+const API_URL = "https://www.tcmb.gov.tr/kurlar/today.xml";
 
 const PRICE_REGEX = /\$([0-9,]+\.\d{2})\s*(USD)?/;
 
@@ -62,7 +62,7 @@ const STEAM_HTML_SELECTORS = [
   ".normal_price span",
   ".discount_final_price",
   ".game_purchase_price",
-  ".your_price div",  
+  ".your_price div",
   ".salepreviewwidgets_StoreSalePriceBox_Wh0L8",
   ".market_commodity_orders_header_promote",
   ".market_commodity_orders_table td",

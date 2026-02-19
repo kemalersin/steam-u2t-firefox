@@ -21,12 +21,12 @@ function run(data, settings) {
       var usdPrice = parseFloat(match[1]);
       var multipliedPrice = usdPrice * data[STORAGE_KEYS.USD_RATE];
       var fractionDigits = (settings.decimals === DECIMALS.SHOW) ? 2 : 0;
-      
+
       var originalPrice = originalContent.replace(CURRENCY_CODES.USD, "").trim();
 
       if (settings.commission !== COMMISSIONS.NONE) {
         multipliedPrice = multipliedPrice * (1 + (settings.commission / 100));
-      }      
+      }
 
       multipliedPrice = getLocalizedPrice(multipliedPrice, fractionDigits);
 
@@ -113,20 +113,28 @@ function update() {
 }
 
 function init() {
-  fetch(API_URL, {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-    },
-  })
-    .then((response) => response.json())
-    .then((response) => {
+  fetch(API_URL)
+    .then((response) => response.text())
+    .then((text) => {
       start();
 
-      browser.storage.local.set({ usdRate: response.USD.satis }).then(() => {
-        setInterval(() => init(), PERIOD_IN_MINUTES);
-      });
-    });
+      const usdMatch = text.match(
+        /<Currency[^>]*Kod="USD"[^>]*>[\s\S]*?<\/Currency>/
+      );
+
+      if (usdMatch) {
+        const rateMatch = usdMatch[0].match(
+          /<ForexSelling>([\d.]+)<\/ForexSelling>/
+        );
+        if (rateMatch) {
+          chrome.storage.local.set({ usdRate: rateMatch[1] });
+
+          browser.storage.local.set({ usdRate: rateMatch[1] }).then(() => {
+            setInterval(() => init(), PERIOD_IN_MINUTES);
+          });
+        }
+      }
+    })
 }
 
 init();

@@ -1,6 +1,6 @@
 ﻿{
   "name": "__MSG_appName__",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "manifest_version": 2,
   "description": "__MSG_appDescription__",
   "browser_specific_settings": {
@@ -18,7 +18,10 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://*.steampowered.com/*", "*://*.steamcommunity.com/*"],
+      "matches": [
+        "*://*.steampowered.com/*",
+        "*://*.steamcommunity.com/*"
+      ],
       "js": [
         "scripts/globals.js",
         "scripts/helpers.js",
@@ -27,5 +30,9 @@
       "run_at": "document_start"
     }
   ],
-  "permissions": ["storage", "alarms", "*://www.genelpara.com/*"]
+  "permissions": [
+    "storage",
+    "alarms",
+    "*://www.tcmb.gov.tr/*"
+  ]
 }
